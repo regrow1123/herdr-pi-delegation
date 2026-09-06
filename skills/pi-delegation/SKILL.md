@@ -52,13 +52,18 @@ herdr integration install pi
 - pi가 저장 안 하면 WARN → `herdr agent read <이름> --source recent-unwrapped` 폴백
 - **결과 처리 규칙은 `herdr-result-handling` 스킬 참조** (출력 보존, 자동수정 금지)
 
-## 피드백 / 수정 재위임
-- 리뷰에서 FAIL 시: **같은 스크립트를 다시 호출**해서 새 pi에 수정 지시 (재사용 금지 원칙 유지).
-- task에 **이전 결과 파일 경로 + 지적사항**을 포함한다 (pi는 이전 맥락이 없으므로 파일로 맥락 전달):
+## 피드백 / 수정 (같은 pi 재사용 — 맥락 유지)
+- 리뷰에서 FAIL 시: **같은 pi 세션에 `herdr agent prompt` 직접 호출** (새 pi 아님 — 작업의 연속이므로 맥락 보존이 효율적).
+- 같은 pi 세션(pi 세션 jsonl)이 이전 대화를 기억하므로, 파일로 맥락을 옮길 필요 없음.
   ```bash
-  ~/.hermes/bin/herdr-spawn-pi.sh "이전 결과 파일(~/.hermes/delegation-results/<이전파일>.md)을 읽고,
-  아래 지적사항 반영해서 수정한 뒤 새 결과 파일을 저장해: - 지적1 ..."
+  # 작업한 pi 이름 확인
+  herdr agent list | jq -r '.result.agents[] | "\(.name) \(.agent_status)"'
+
+  # 같은 pi에 지적사항 피드백
+  herdr agent prompt <같은 pi 이름> "아래 지적사항 반영해서 수정 후 결과 파일 다시 저장해:
+  - 지적1 ..." --wait --timeout 120000
   ```
+- 예외: pi가 죽었거나 pane 정리로 닫혔으면 그때만 스크립트 재호출 (새 pi + 이전 결과 파일 경로 전달).
 - 자세한 리뷰/수정 루프 절차는 `delegation-review` 스킬 참조.
 
 ## 병렬 실행
