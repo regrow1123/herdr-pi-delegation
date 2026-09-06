@@ -28,6 +28,8 @@ cd herdr-pi-delegation
 ./install.sh
 ```
 
+설치 스크립트가 `~/.hermes/bin` 을 PATH에 자동 추가한다 (새 셸부터 `herdr-spawn-pi.sh` 이름으로 실행 가능).
+
 또는 스킬 허브 방식:
 
 ```bash
